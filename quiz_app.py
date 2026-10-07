@@ -152,7 +152,7 @@ def add_bg_from_local(image_file):
         box-shadow: 0 6px 12px rgba(210, 105, 30, 0.2);
     }}
 
-    /* 4. 💖 终极改造：选择题强制满宽等长排列 💖 */
+    /* 4. 终极改造：选择题强制满宽等长排列 */
     div[role="radiogroup"] {{
         display: flex !important;
         flex-direction: column !important;
