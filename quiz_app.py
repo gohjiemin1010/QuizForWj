@@ -331,7 +331,7 @@ if 'just_completed' not in st.session_state:
 if st.session_state.current_level is None:
 
     st.title("🗺️ 五年级历史探险")
-    st.markdown("欢迎来到历史探险！完成当前关卡的所有挑战（包括做错的题目），才能解锁下一关哦！")
+    st.markdown("欢迎来到历史探险！完成当前关卡的所有挑战，才能解锁下一关哦！")
 
     cols = st.columns(3)
     for level in range(1, 13):
@@ -513,7 +513,7 @@ else:
         if 'level_start_time' in st.session_state:
             total_seconds = int(time.time() - st.session_state.level_start_time)
             m, s = divmod(total_seconds, 60)
-            st.success(f"你成功消灭了单元 {st.session_state.current_level} 的所有错题，完全掌握了本单元的知识！\n\n⏱️ 本关总用时：**{m}分{s}秒**")
+            st.success(f"⏱️ 本关总用时：**{m}分{s}秒**")
         else:
             st.success(f"你成功消灭了单元 {st.session_state.current_level} 的所有错题，完全掌握了本单元的知识！")
 
