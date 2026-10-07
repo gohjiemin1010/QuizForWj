@@ -12,7 +12,7 @@ def get_audio_b64(filepath):
     return ""
 
 def init_audio_system():
-    # 读取所有音频文件（新增了 clap.mp3）
+    # 读取所有音频文件
     bgm_b64 = get_audio_b64("bgm.mp3")
     correct_b64 = get_audio_b64("correct.mp3")
     wrong_b64 = get_audio_b64("wrong.mp3")
@@ -31,9 +31,9 @@ def init_audio_system():
                 bgm.loop = true;
                 window.parent.bgmAudio = bgm;
 
-                // 2. 提供给 Python 调用的音效播放函数 (支持三种音效)
+                // 2. 提供给 Python 调用的音效播放函数
                 window.parent.playSfx = function(type) {{
-                    if (window.parent.isMuted) return; // 如果静音了就不播放
+                    if (window.parent.isMuted) return; 
 
                     var b64_data = '';
                     if (type === 'correct') b64_data = '{correct_b64}';
@@ -99,7 +99,6 @@ def trigger_sfx(is_correct):
     components.html(js, height=0, width=0)
 
 # --- 背景图片及核心样式设置 ---
-# --- 背景图片及核心样式设置 ---
 def add_bg_from_local(image_file):
     if not os.path.exists(image_file):
         return 
@@ -153,7 +152,7 @@ def add_bg_from_local(image_file):
         box-shadow: 0 6px 12px rgba(210, 105, 30, 0.2);
     }}
 
-    /* 4. 💖 完美修复版：只针对具体的选项进行满宽改造，放过标题 💖 */
+    /* 4. 💖 终极完美版：满宽长条 + 斩草除根的无圆圈设计 💖 */
     /* 强制容器全宽 */
     div[data-testid="stRadio"],
     div[data-testid="stRadio"] > div,
@@ -161,7 +160,7 @@ def add_bg_from_local(image_file):
         width: 100% !important;
     }}
 
-    /* 核心修复：使用 [role="radiogroup"] 确保绝对不会误伤上面那句"请选择你的答案" */
+    /* 锁定选项卡片容器 */
     div[role="radiogroup"] label {{
         background: linear-gradient(to right, #fdf9f1, #f5ebd3) !important;
         border: 2px solid #e3d2be !important;
@@ -174,7 +173,7 @@ def add_bg_from_local(image_file):
         display: flex !important;
         align-items: center !important;
         box-sizing: border-box !important; 
-        margin-bottom: 12px !important; /* 强制增加保底间距，防止选项贴在一起 */
+        margin-bottom: 12px !important; 
     }}
 
     div[role="radiogroup"] label:hover {{
@@ -192,12 +191,23 @@ def add_bg_from_local(image_file):
         transform: translateX(8px) !important; 
     }}
 
-    /* 彻底隐藏掉原本那颗圆圆的单选按钮 */
-    div[role="radiogroup"] label > div:first-child {{
+    /* 💥 重点：无视云端版本更新，彻底干掉圆圆的单选按钮 💥 */
+    /* 隐藏 input */
+    div[role="radiogroup"] label input {{
+        display: none !important;
+        opacity: 0 !important;
+    }}
+    /* 强力隐藏绘制红圈圈的那个 div */
+    div[role="radiogroup"] label > div:first-of-type {{
         display: none !important;
     }}
+    /* 取消原本圆圈占用的左侧空白，让文字完美靠左居中对齐 */
+    div[role="radiogroup"] label > div {{
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }}
 
-    /* 文字排版优化，保证文字在方块里好看且不会被压缩 */
+    /* 文字排版优化 */
     div[role="radiogroup"] p {{
         font-size: 1.15rem !important;
         font-weight: bold !important;
