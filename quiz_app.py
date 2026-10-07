@@ -12,7 +12,7 @@ def get_audio_b64(filepath):
     return ""
 
 def init_audio_system():
-    # 读取所有音频文件（新增了 clap.mp3）
+    # 读取所有音频文件
     bgm_b64 = get_audio_b64("bgm.mp3")
     correct_b64 = get_audio_b64("correct.mp3")
     wrong_b64 = get_audio_b64("wrong.mp3")
@@ -31,9 +31,9 @@ def init_audio_system():
                 bgm.loop = true;
                 window.parent.bgmAudio = bgm;
 
-                // 2. 提供给 Python 调用的音效播放函数 (支持三种音效)
+                // 2. 提供给 Python 调用的音效播放函数
                 window.parent.playSfx = function(type) {{
-                    if (window.parent.isMuted) return; // 如果静音了就不播放
+                    if (window.parent.isMuted) return; 
 
                     var b64_data = '';
                     if (type === 'correct') b64_data = '{correct_b64}';
@@ -98,7 +98,7 @@ def trigger_sfx(is_correct):
     js = f"<script>if(window.parent.playSfx) window.parent.playSfx('{sfx_type}');</script>"
     components.html(js, height=0, width=0)
 
-# --- 背景图片设置 ---
+# --- 背景图片及核心样式设置 ---
 def add_bg_from_local(image_file):
     if not os.path.exists(image_file):
         return 
@@ -109,12 +109,15 @@ def add_bg_from_local(image_file):
     st.markdown(
     f"""
     <style>
+    /* 1. 全局背景 */
     .stApp {{
         background-image: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url(data:image/jpg;base64,{encoded_string});
         background-size: cover;          
         background-position: center;     
         background-attachment: fixed;    
     }}
+
+    /* 2. 悬浮大方块 */
     .block-container {{
         background: linear-gradient(145deg, rgba(255, 253, 240, 0.95), rgba(250, 240, 215, 0.95)) !important; 
         border-radius: 25px; 
@@ -131,6 +134,8 @@ def add_bg_from_local(image_file):
         transform: translateY(-8px); 
         box-shadow: 0 22px 30px rgba(139, 115, 85, 0.2), 0 10px 10px rgba(139, 115, 85, 0.15), inset 0 -5px 0 rgba(139, 115, 85, 0.05); 
     }}
+
+    /* 3. 按钮配色优化 */
     div[data-testid="stButton"] button {{
         background-color: #ffffff !important;
         border: 2px solid #deb887 !important; 
@@ -145,6 +150,56 @@ def add_bg_from_local(image_file):
         color: #d2691e !important;
         transform: translateY(-3px); 
         box-shadow: 0 6px 12px rgba(210, 105, 30, 0.2);
+    }}
+
+    /* 4. 💖 终极改造：选择题强制满宽等长排列 💖 */
+    div[role="radiogroup"] {{
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important; /* 核心魔法：强制让里面每一个选项长条都拉伸到一模一样的全宽度 */
+        gap: 15px !important; 
+        width: 100% !important; 
+    }}
+    div[role="radiogroup"] > label {{
+        background: linear-gradient(to right, #fdf9f1, #f5ebd3) !important;
+        border: 2px solid #e3d2be !important;
+        border-radius: 15px !important;
+        padding: 16px 24px !important; 
+        cursor: pointer !important;
+        box-shadow: 0 4px 6px rgba(139, 115, 85, 0.05) !important;
+        transition: all 0.2s ease-in-out !important;
+        width: 100% !important; 
+        display: flex !important;
+        align-items: center !important;
+        box-sizing: border-box !important; /* 确保 padding 绝对不会撑破容器 */
+    }}
+    div[role="radiogroup"] > label:hover {{
+        background: #fcf1da !important;
+        border-color: #d2691e !important;
+        transform: translateX(8px) !important; 
+        box-shadow: 0 6px 12px rgba(210, 105, 30, 0.15) !important;
+    }}
+
+    /* 选中状态下的高亮反馈 */
+    div[role="radiogroup"] > label:has(input:checked) {{
+        background: #fae6c5 !important;
+        border: 2px solid #d2691e !important;
+        box-shadow: 0 0 12px rgba(210, 105, 30, 0.2) !important;
+        transform: translateX(8px) !important; 
+    }}
+
+    /* 彻底隐藏掉原本那颗圆圆的单选按钮 */
+    div[role="radiogroup"] > label > div:first-child {{
+        display: none !important;
+    }}
+
+    /* 文字排版优化，保证文字在方块里好看 */
+    div[role="radiogroup"] p {{
+        font-size: 1.15rem !important;
+        font-weight: bold !important;
+        color: #5c4033 !important;
+        margin: 0 !important;
+        width: 100% !important; 
     }}
     </style>
     """,
@@ -321,7 +376,6 @@ if 'total_q_count' not in st.session_state:
     st.session_state.total_q_count = 0
 if 'just_answered' not in st.session_state:
     st.session_state.just_answered = False
-# 新增：记录是否刚刚通关，用于控制掌声和放炮动画只播放一次
 if 'just_completed' not in st.session_state:
     st.session_state.just_completed = False
 
@@ -513,7 +567,7 @@ else:
         if 'level_start_time' in st.session_state:
             total_seconds = int(time.time() - st.session_state.level_start_time)
             m, s = divmod(total_seconds, 60)
-            st.success(f"⏱️ 本关总用时：**{m}分{s}秒**")
+            st.success(f"你成功消灭了单元 {st.session_state.current_level} 的所有错题，完全掌握了本单元的知识！\n\n⏱️ 本关总用时：**{m}分{s}秒**")
         else:
             st.success(f"你成功消灭了单元 {st.session_state.current_level} 的所有错题，完全掌握了本单元的知识！")
 
