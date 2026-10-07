@@ -12,7 +12,7 @@ def get_audio_b64(filepath):
     return ""
 
 def init_audio_system():
-    # 读取所有音频文件
+    # 读取所有音频文件（新增了 clap.mp3）
     bgm_b64 = get_audio_b64("bgm.mp3")
     correct_b64 = get_audio_b64("correct.mp3")
     wrong_b64 = get_audio_b64("wrong.mp3")
@@ -31,9 +31,9 @@ def init_audio_system():
                 bgm.loop = true;
                 window.parent.bgmAudio = bgm;
 
-                // 2. 提供给 Python 调用的音效播放函数
+                // 2. 提供给 Python 调用的音效播放函数 (支持三种音效)
                 window.parent.playSfx = function(type) {{
-                    if (window.parent.isMuted) return; 
+                    if (window.parent.isMuted) return; // 如果静音了就不播放
 
                     var b64_data = '';
                     if (type === 'correct') b64_data = '{correct_b64}';
@@ -99,6 +99,7 @@ def trigger_sfx(is_correct):
     components.html(js, height=0, width=0)
 
 # --- 背景图片及核心样式设置 ---
+# --- 背景图片及核心样式设置 ---
 def add_bg_from_local(image_file):
     if not os.path.exists(image_file):
         return 
@@ -152,15 +153,16 @@ def add_bg_from_local(image_file):
         box-shadow: 0 6px 12px rgba(210, 105, 30, 0.2);
     }}
 
-    /* 4. 终极改造：选择题强制满宽等长排列 */
+    /* 4. 💖 完美修复版：只针对具体的选项进行满宽改造，放过标题 💖 */
+    /* 强制容器全宽 */
+    div[data-testid="stRadio"],
+    div[data-testid="stRadio"] > div,
     div[role="radiogroup"] {{
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important; /* 核心魔法：强制让里面每一个选项长条都拉伸到一模一样的全宽度 */
-        gap: 15px !important; 
-        width: 100% !important; 
+        width: 100% !important;
     }}
-    div[role="radiogroup"] > label {{
+
+    /* 核心修复：使用 [role="radiogroup"] 确保绝对不会误伤上面那句"请选择你的答案" */
+    div[role="radiogroup"] label {{
         background: linear-gradient(to right, #fdf9f1, #f5ebd3) !important;
         border: 2px solid #e3d2be !important;
         border-radius: 15px !important;
@@ -171,9 +173,11 @@ def add_bg_from_local(image_file):
         width: 100% !important; 
         display: flex !important;
         align-items: center !important;
-        box-sizing: border-box !important; /* 确保 padding 绝对不会撑破容器 */
+        box-sizing: border-box !important; 
+        margin-bottom: 12px !important; /* 强制增加保底间距，防止选项贴在一起 */
     }}
-    div[role="radiogroup"] > label:hover {{
+
+    div[role="radiogroup"] label:hover {{
         background: #fcf1da !important;
         border-color: #d2691e !important;
         transform: translateX(8px) !important; 
@@ -181,7 +185,7 @@ def add_bg_from_local(image_file):
     }}
 
     /* 选中状态下的高亮反馈 */
-    div[role="radiogroup"] > label:has(input:checked) {{
+    div[role="radiogroup"] label:has(input:checked) {{
         background: #fae6c5 !important;
         border: 2px solid #d2691e !important;
         box-shadow: 0 0 12px rgba(210, 105, 30, 0.2) !important;
@@ -189,11 +193,11 @@ def add_bg_from_local(image_file):
     }}
 
     /* 彻底隐藏掉原本那颗圆圆的单选按钮 */
-    div[role="radiogroup"] > label > div:first-child {{
+    div[role="radiogroup"] label > div:first-child {{
         display: none !important;
     }}
 
-    /* 文字排版优化，保证文字在方块里好看 */
+    /* 文字排版优化，保证文字在方块里好看且不会被压缩 */
     div[role="radiogroup"] p {{
         font-size: 1.15rem !important;
         font-weight: bold !important;
@@ -506,7 +510,7 @@ else:
     else:
         # 当刚刚通关时，同时触发原生热气球、掌声音效、和绚丽的满屏放炮（礼花）
         if st.session_state.get('just_completed', False):
-            st.balloons() # Streamlit 气球
+            st.balloons() 
 
             # 注入炫酷的前端放炮(Confetti)特效和鼓掌声音
             confetti_and_clap_js = """
@@ -515,7 +519,7 @@ else:
                     // 1. 播放掌声
                     if (window.parent.playSfx) window.parent.playSfx('clap');
 
-                    // 2. 放礼花特效 (从屏幕左右两边喷射)
+                    // 2. 放礼花特效
                     var duration = 4 * 1000;
                     var end = Date.now() + duration;
                     (function frame() {
